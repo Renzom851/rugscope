@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Learn how Rugscope scans token pages, scores risk, and protects user privacy.">
+    <title>Rugscope Docs - How It Works</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="Rugscope home">
+        <img src="logo.png" alt="">
+        <span>Rugscope</span>
+      </a>
+      <nav aria-label="Primary">
+        <a href="index.html#signals">Signals</a>
+        <a href="index.html#install">Install</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+    </header>
+
+    <main class="docs-main">
+      <section class="docs-hero">
+        <p class="eyebrow">Docs</p>
+        <h1>How Rugscope works</h1>
+        <p class="lede">Rugscope watches the page you are already viewing, finds the token address, shows a risk summary, and draws a TradingView-style chart with wallet trade markers. It is built to give context before you trade, not to tell you what to buy or sell.</p>
+      </section>
+
+      <section class="docs-layout" aria-label="Rugscope documentation">
+        <article class="doc-panel">
+          <h2>What happens when you open a token page</h2>
+          <ol class="doc-list numbered">
+            <li>Rugscope scans the page URL, title, links, and visible text for token addresses.</li>
+            <li>When it finds a likely token, it checks public market and risk data.</li>
+            <li>A movable risk panel appears on the page with the score, warnings, facts, chart, and tracked wallet trades.</li>
+            <li>The panel starts expanded so you can read the result immediately. You can drag it, resize it, or collapse it when you want more screen space.</li>
+          </ol>
+        </article>
+
+        <article class="doc-panel">
+          <h2>What Rugscope checks</h2>
+          <div class="doc-grid">
+            <div>
+              <h3>Liquidity</h3>
+              <p>Thin pools, very low liquidity, and sharp liquidity drops can make a token easier to move or drain.</p>
+            </div>
+            <div>
+              <h3>Pair age</h3>
+              <p>Very new pools are treated with more caution because there is less trading history to review.</p>
+            </div>
+            <div>
+              <h3>Market pressure</h3>
+              <p>Rugscope looks at price drops, buy/sell pressure, FDV compared with liquidity, and recent activity.</p>
+            </div>
+            <div>
+              <h3>Creator risk</h3>
+              <p>For Solana tokens, Rugscope checks authority, LP lock, holder concentration, and listed risk warnings.</p>
+            </div>
+            <div>
+              <h3>Wallet activity</h3>
+              <p>Tracked wallet buys and sells are matched against recent pool trades and marked on the chart.</p>
+            </div>
+            <div>
+              <h3>Trade details</h3>
+              <p>When a tracked wallet trade is found, Rugscope shows the side, amount, USD volume, time, and transaction link.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="doc-panel">
+          <h2>Wallet tracking</h2>
+          <ol class="doc-list numbered">
+            <li>Open a token page and wait for the Rugscope panel to appear.</li>
+            <li>Paste a wallet address into Wallet Tracker and add a label such as Dev, Whale, or Insider.</li>
+            <li>Rugscope checks recent pool trades for that wallet and places a circular Rugscope marker on the candle where the wallet bought or sold.</li>
+            <li>When Rugscope sees a new matching trade while the extension is running, it shows a Chrome notification.</li>
+          </ol>
+        </article>
+
+        <article class="doc-panel">
+          <h2>Chart markers</h2>
+          <p>The chart uses TradingView Lightweight Charts for an interactive candle view. Green markers are buys and red markers are sells. A marker with a dev label means the wallet was either detected as a creator/dev wallet from available public data or manually tracked with a dev-style label. The details list below the chart shows the amount, USD volume, time, and transaction link.</p>
+        </article>
+
+        <article class="doc-panel">
+          <h2>Moving the panel</h2>
+          <p>Drag the top of the Rugscope panel to move it. Use the lower-right handle to resize it. Rugscope saves the position and size locally, so the panel stays where you placed it during future scans.</p>
+        </article>
+
+        <article class="doc-panel">
+          <h2>Understanding the score</h2>
+          <div class="risk-scale">
+            <div class="risk-item low">
+              <strong>Low</strong>
+              <span>No major warning signs were found from the available data.</span>
+            </div>
+            <div class="risk-item moderate">
+              <strong>Moderate</strong>
+              <span>Some caution signals are present, such as limited liquidity or a newer pair.</span>
+            </div>
+            <div class="risk-item high">
+              <strong>High</strong>
+              <span>Multiple warning signs are present, such as thin liquidity, strong sell pressure, or risky authority signals.</span>
+            </div>
+            <div class="risk-item critical">
+              <strong>Critical</strong>
+              <span>Rugscope found severe warnings, such as possible liquidity removal or no active market.</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="doc-panel">
+          <h2>Supported pages</h2>
+          <p>Rugscope can scan any normal Chrome tab where a token address appears. It is designed for trading and token pages such as pump.fun, Axiom, DEX Screener, GeckoTerminal, Birdeye, GMGN, BullX, DEXTools, and similar platforms.</p>
+        </article>
+
+        <article class="doc-panel">
+          <h2>Privacy</h2>
+          <p>Rugscope looks for public token and wallet addresses you choose to track. It sends detected token addresses and watched wallet addresses to public market and trade APIs so it can build the report. It does not read wallet keys, seed phrases, passwords, cookies, or private messages.</p>
+        </article>
+
+        <article class="doc-panel">
+          <h2>Important note</h2>
+          <p>Rugscope is a risk scanner, not financial advice. A low score does not mean a token is safe, and a high score does not prove a scam. Use it as one more layer of information before making a decision.</p>
+          <div class="doc-actions">
+            <a class="button primary" href="downloads/rugscope-extension.zip" download>Download Rugscope</a>
+            <a class="button secondary" href="index.html">Back Home</a>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Rugscope is an informational risk scanner, not financial advice.</span>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="downloads/rugscope-extension.zip" download>Download</a>
+      </div>
+    </footer>
+  </body>
+</html>

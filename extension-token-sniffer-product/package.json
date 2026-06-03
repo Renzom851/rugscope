@@ -1,0 +1,11 @@
+{
+  "name": "rugscope",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "devDependencies": {
+    "lightweight-charts": "^5.2.0"
+  }
+}
