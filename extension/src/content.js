@@ -537,6 +537,23 @@
           color: var(--rs-muted);
           font-size: 11px;
         }
+        .timeframe-controls {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 5px;
+          justify-content: flex-end;
+        }
+        .timeframe-controls button {
+          min-height: 26px;
+          padding: 5px 7px;
+          border-radius: 6px;
+          font-size: 11px;
+        }
+        .timeframe-controls button.active {
+          border-color: rgba(255, 79, 216, 0.72);
+          color: #07040b;
+          background: var(--rs-pink);
+        }
         .chart-wrap {
           position: relative;
           overflow: hidden;
@@ -869,6 +886,27 @@
       removeOverlay();
     });
 
+    root.querySelectorAll("[data-timeframe]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const timeframe = button.getAttribute("data-timeframe");
+        root.querySelectorAll("[data-timeframe]").forEach((node) => {
+          node.disabled = true;
+        });
+        const response = await chrome.runtime.sendMessage({
+          type: "rugscope:set-chart-timeframe",
+          timeframe
+        }).catch((error) => ({ ok: false, error: error.message }));
+
+        if (response?.ok) {
+          scheduleScan("timeframe-change", true);
+        } else {
+          root.querySelectorAll("[data-timeframe]").forEach((node) => {
+            node.disabled = false;
+          });
+        }
+      });
+    });
+
     root.querySelector("[data-action='add-wallet']")?.addEventListener("click", async () => {
       const addressInput = root.querySelector("[data-wallet-address]");
       const labelInput = root.querySelector("[data-wallet-label]");
@@ -915,6 +953,14 @@
   function renderChart(result) {
     const chart = result.chart;
     const candles = Array.isArray(chart?.candles) ? chart.candles : [];
+    const timeframes = Array.isArray(chart?.availableTimeframes) && chart.availableTimeframes.length
+      ? chart.availableTimeframes
+      : [
+        { id: "1s", label: "1s" },
+        { id: "5s", label: "5s" },
+        { id: "10s", label: "10s" },
+        { id: "1m", label: "1min" }
+      ];
 
     if (!chart?.ok || candles.length < 2) {
       const message = chart?.errors?.[0] || "Chart is loading or unavailable for this pool.";
@@ -933,7 +979,11 @@
       <div class="chart-card">
         <div class="card-head">
           <strong>Token chart</strong>
-          <span>TradingView Lightweight Charts - ${escapeHtml(chart.timeframe || "5m")}</span>
+          <div class="timeframe-controls" aria-label="Chart timeframe">
+            ${timeframes.map((item) => `
+              <button type="button" data-timeframe="${escapeAttribute(item.id)}" class="${item.id === chart.timeframe ? "active" : ""}">${escapeHtml(item.label)}</button>
+            `).join("")}
+          </div>
         </div>
         <div class="chart-wrap">
           <div class="tv-chart" data-tv-chart></div>
@@ -962,6 +1012,7 @@
       low: candle.low,
       close: candle.close
     }));
+    const showSeconds = chartData?.timeframe !== "1m";
     const candleByTime = new Map(candleData.map((candle) => [String(candle.time), candle]));
     const chart = library.createChart(chartHost, {
       autoSize: true,
@@ -984,7 +1035,7 @@
       timeScale: {
         borderColor: "rgba(202, 126, 255, 0.18)",
         timeVisible: true,
-        secondsVisible: false
+        secondsVisible: showSeconds
       },
       crosshair: {
         mode: library.CrosshairMode?.Magnet ?? 1,

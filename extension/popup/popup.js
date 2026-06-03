@@ -9,6 +9,7 @@ const tokenAddress = document.getElementById("tokenAddress");
 const facts = document.getElementById("facts");
 const flags = document.getElementById("flags");
 const dexButton = document.getElementById("dexButton");
+const alertsButton = document.getElementById("alertsButton");
 const walletStatus = document.getElementById("walletStatus");
 const walletAddress = document.getElementById("walletAddress");
 const walletLabel = document.getElementById("walletLabel");
@@ -20,6 +21,7 @@ let currentResult = null;
 document.addEventListener("DOMContentLoaded", loadState);
 refreshButton.addEventListener("click", refreshScan);
 dexButton.addEventListener("click", () => openLink(currentResult?.links?.dex));
+alertsButton.addEventListener("click", openAlerts);
 addWalletButton.addEventListener("click", addWallet);
 
 async function loadState() {
@@ -206,6 +208,10 @@ function openLink(url) {
     return;
   }
   chrome.tabs.create({ url });
+}
+
+async function openAlerts() {
+  await sendMessage({ type: "rugscope:open-alerts-page" });
 }
 
 function shortAddress(address) {
