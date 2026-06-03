@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Rugscope helps crypto traders spot token risk directly on the pages they already use.">
+    <title>Rugscope - Token Risk Scanner</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Rugscope home">
+        <img src="logo.png" alt="">
+        <span>Rugscope</span>
+      </a>
+      <nav aria-label="Primary">
+        <a href="#signals">Signals</a>
+        <a href="#install">Install</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-media" aria-hidden="true"></div>
+        <div class="hero-content">
+          <p class="eyebrow">Chrome Extension</p>
+          <h1>Rugscope</h1>
+          <p class="lede">See token risk while you browse trading pages. Rugscope checks the token on your screen, opens a movable TradingView-style chart panel, marks tracked wallet trades, and shows risk details without making you leave the page.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="downloads/rugscope-extension.zip" download>Download Rugscope</a>
+            <a class="button secondary" href="docs.html">How It Works</a>
+            <a class="button secondary" href="chrome://extensions">Open Chrome Extensions</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="signals" class="band">
+        <div class="section-head">
+          <p class="eyebrow">Live Page Scans</p>
+          <h2>Risk details where traders need them</h2>
+        </div>
+        <div class="signal-grid">
+          <article class="signal-card">
+            <span class="signal-mark red"></span>
+            <h3>Liquidity warnings</h3>
+            <p>Rugscope highlights thin pools, new pools, and sharp liquidity drops that may make a token easier to manipulate.</p>
+          </article>
+          <article class="signal-card">
+            <span class="signal-mark amber"></span>
+            <h3>Creator signals</h3>
+            <p>For Solana tokens, Rugscope checks authority, LP lock, holder concentration, and other creator-related warning signs.</p>
+          </article>
+          <article class="signal-card">
+            <span class="signal-mark green"></span>
+            <h3>TradingView-style chart</h3>
+            <p>Use an interactive candle chart powered by TradingView Lightweight Charts, with buy and sell markers placed directly on candles.</p>
+          </article>
+          <article class="signal-card">
+            <span class="signal-mark cyan"></span>
+            <h3>Wallet tracking</h3>
+            <p>Add wallets you care about and Rugscope marks their buys or sells on the chart with trade amount, time, and transaction details.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="install" class="install">
+        <div class="section-head">
+          <p class="eyebrow">Install Rugscope</p>
+          <h2>Chrome asks you to approve it once</h2>
+          <p class="section-copy">For your safety, Chrome does not let websites install downloaded extensions by themselves. After downloading Rugscope, you approve it from Chrome's Extensions page and then it can scan token pages automatically.</p>
+        </div>
+        <ol class="steps">
+          <li>
+            <strong>Download Rugscope</strong>
+            <span>Download the ZIP file and unzip it somewhere easy to find.</span>
+          </li>
+          <li>
+            <strong>Open Chrome extensions</strong>
+            <span>Open <code>chrome://extensions</code> and turn on the Developer mode switch. Chrome uses this switch for manually added extensions.</span>
+          </li>
+          <li>
+            <strong>Select the Rugscope folder</strong>
+            <span>Click Load unpacked, choose the unzipped <code>rugscope-extension</code> folder, then open a token page.</span>
+          </li>
+        </ol>
+        <div class="install-actions">
+          <a class="button primary" href="downloads/rugscope-extension.zip" download>Download Rugscope</a>
+          <a class="button secondary" href="chrome://extensions">Open <code>chrome://extensions</code></a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Rugscope is an informational risk scanner, not financial advice.</span>
+      <div class="footer-links">
+        <a href="docs.html">Docs</a>
+        <a href="downloads/rugscope-extension.zip" download>Download</a>
+      </div>
+    </footer>
+  </body>
+</html>
