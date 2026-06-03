@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "Rugscope",
+  "version": "1.0.0",
+  "description": "Auto-scans crypto token pages for rug-pull, liquidity, creator, and market-risk signals.",
+  "permissions": [
+    "activeTab",
+    "alarms",
+    "notifications",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "https://api.dexscreener.com/*",
+    "https://api.geckoterminal.com/*",
+    "https://api.rugcheck.xyz/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "vendor/lightweight-charts.standalone.production.js",
+        "src/content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Rugscope",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "assets/icon16.png",
+      "32": "assets/icon32.png",
+      "48": "assets/icon48.png",
+      "128": "assets/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icon16.png",
+    "32": "assets/icon32.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/icon48.png",
+        "assets/logo.png",
+        "vendor/lightweight-charts.standalone.production.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}
