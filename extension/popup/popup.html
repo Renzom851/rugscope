@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rugscope</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="header">
+        <img src="../assets/icon48.png" alt="" class="logo">
+        <div>
+          <p class="eyebrow">Rugscope</p>
+          <h1>Token Risk Scan</h1>
+        </div>
+        <button class="icon-button" id="refreshButton" type="button" title="Refresh scan" aria-label="Refresh scan">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 12a8 8 0 1 1-2.34-5.66"></path>
+            <path d="M20 4v6h-6"></path>
+          </svg>
+        </button>
+      </header>
+
+      <section id="stateView" class="state">
+        <div class="loader"></div>
+        <p>Scanning current tab</p>
+      </section>
+
+      <section id="resultView" class="result hidden">
+        <div class="score-panel">
+          <div class="score-ring" id="scoreRing">
+            <span id="scoreValue">0</span>
+          </div>
+          <div>
+            <p class="label" id="riskLabel">Unknown</p>
+            <h2 id="tokenName">Detected token</h2>
+            <p class="address" id="tokenAddress"></p>
+          </div>
+        </div>
+
+        <div class="facts" id="facts"></div>
+        <div class="flags" id="flags"></div>
+
+        <div class="actions">
+          <button id="dexButton" type="button">Open DEX</button>
+        </div>
+
+        <section class="wallet-manager">
+          <div class="section-title">
+            <span>Wallet Tracker</span>
+            <small id="walletStatus">Add wallet</small>
+          </div>
+          <div class="wallet-form">
+            <input id="walletAddress" type="text" spellcheck="false" placeholder="Wallet address">
+            <input id="walletLabel" type="text" spellcheck="false" placeholder="Label">
+            <button id="addWalletButton" type="button">Track</button>
+          </div>
+          <div class="wallet-list" id="walletList"></div>
+        </section>
+      </section>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>
