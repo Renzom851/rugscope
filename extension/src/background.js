@@ -8,32 +8,6 @@ const MAX_WALLET_MATCHES = 80;
 const MAX_STORED_WALLET_ALERTS = 300;
 const MAX_WALLET_WIDE_SIGNATURES = 24;
 const SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com";
-const DEFAULT_CHART_TIMEFRAME = "1m";
-
-const CHART_TIMEFRAMES = {
-  "1s": {
-    label: "1s",
-    source: "trades",
-    bucketSeconds: 1
-  },
-  "5s": {
-    label: "5s",
-    source: "trades",
-    bucketSeconds: 5
-  },
-  "10s": {
-    label: "10s",
-    source: "trades",
-    bucketSeconds: 10
-  },
-  "1m": {
-    label: "1min",
-    source: "ohlcv",
-    apiTimeframe: "minute",
-    aggregate: 1,
-    bucketSeconds: 60
-  }
-};
 
 const CHAIN_ALIASES = {
   sol: "solana",
@@ -184,16 +158,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({
         ok: false,
         error: error.message || "Could not refresh wallet tracker"
-      });
-    });
-    return true;
-  }
-
-  if (message.type === "rugscope:set-chart-timeframe") {
-    setChartTimeframe(message.timeframe).then(sendResponse).catch((error) => {
-      sendResponse({
-        ok: false,
-        error: error.message || "Could not change chart timeframe"
       });
     });
     return true;
@@ -766,17 +730,16 @@ async function enrichResultWithMarketData(result, options = {}) {
   if (!result?.dex?.pair?.pairAddress) {
     return {
       ...result,
-      chart: result?.chart || null,
+      chart: null,
       walletMatches: result?.walletMatches || []
     };
   }
 
   const trackedWallets = await getTrackedWallets();
-  const chartTimeframe = await getChartTimeframe();
-  const market = await fetchGeckoMarketData(result, trackedWallets, chartTimeframe);
+  const market = await fetchWalletTradeData(result, trackedWallets);
   const enriched = {
     ...result,
-    chart: market.chart,
+    chart: null,
     walletMatches: market.walletMatches,
     walletTracker: {
       trackedCount: trackedWallets.filter((wallet) => wallet.enabled !== false).length,
@@ -792,29 +755,28 @@ async function enrichResultWithMarketData(result, options = {}) {
   return enriched;
 }
 
-async function fetchGeckoMarketData(result, trackedWallets, chartTimeframe = DEFAULT_CHART_TIMEFRAME) {
+async function fetchWalletTradeData(result, trackedWallets) {
   const pair = result?.dex?.pair;
   const network = geckoNetworkForChain(pair?.chainId || result.chainId);
   const errors = [];
-  const timeframe = normalizeChartTimeframe(chartTimeframe);
-  const timeframeConfig = CHART_TIMEFRAMES[timeframe];
+  const chainType = result.chainType === "solana" ? "solana" : "evm";
+  const watched = buildWatchedWallets(result, trackedWallets).filter((wallet) => wallet.chainType === chainType);
 
-  if (!network || !pair?.pairAddress) {
+  if (!watched.length) {
     return {
-      chart: {
-        ok: false,
-        source: "GeckoTerminal",
-        timeframe,
-        timeframeLabel: timeframeConfig.label,
-        errors: ["Chart data is unavailable for this chain or pair."]
-      },
       walletMatches: [],
       errors
     };
   }
 
+  if (!network || !pair?.pairAddress) {
+    return {
+      walletMatches: [],
+      errors: ["Wallet trade data is unavailable for this chain or pair."]
+    };
+  }
+
   const poolAddress = pair.pairAddress;
-  let ohlcv = null;
   let trades = null;
 
   try {
@@ -823,120 +785,16 @@ async function fetchGeckoMarketData(result, trackedWallets, chartTimeframe = DEF
     errors.push(`Trade feed unavailable: ${error.message}`);
   }
 
-  if (timeframeConfig.source === "ohlcv") {
-    try {
-      ohlcv = await fetchJson(`https://api.geckoterminal.com/api/v2/networks/${encodeURIComponent(network)}/pools/${encodeURIComponent(poolAddress)}/ohlcv/${timeframeConfig.apiTimeframe}?aggregate=${encodeURIComponent(timeframeConfig.aggregate)}&limit=180&currency=usd&token=base&include_empty_intervals=true`);
-    } catch (error) {
-      errors.push(`Chart candles unavailable: ${error.message}`);
-    }
-  }
-
-  const candles = timeframeConfig.source === "trades"
-    ? buildCandlesFromTrades(trades, timeframeConfig.bucketSeconds)
-    : parseOhlcvCandles(ohlcv);
   const walletMatches = parseWalletTradeMatches({
     trades,
-    candles,
     result,
     trackedWallets
   });
 
   return {
-    chart: {
-      ok: candles.length > 0,
-      source: "GeckoTerminal",
-      network,
-      poolAddress,
-      timeframe,
-      timeframeLabel: timeframeConfig.label,
-      availableTimeframes: Object.entries(CHART_TIMEFRAMES).map(([id, config]) => ({
-        id,
-        label: config.label
-      })),
-      candles,
-      markers: walletMatches.map((match) => ({
-        id: match.id,
-        walletId: match.walletId,
-        walletLabel: match.walletLabel,
-        isDev: match.isDev,
-        kind: match.kind,
-        timestamp: match.timestamp,
-        candleTime: match.candleTime,
-        priceUsd: match.priceUsd,
-        volumeUsd: match.volumeUsd,
-        amount: match.amount,
-        tokenSymbol: match.tokenSymbol,
-        txHash: match.txHash
-      })),
-      base: ohlcv?.meta?.base || null,
-      quote: ohlcv?.meta?.quote || null,
-      errors,
-      updatedAt: Date.now()
-    },
     walletMatches,
     errors
   };
-}
-
-function parseOhlcvCandles(ohlcv) {
-  const list = ohlcv?.data?.attributes?.ohlcv_list;
-  if (!Array.isArray(list)) {
-    return [];
-  }
-
-  return list
-    .map((item) => ({
-      time: numberOrNull(item?.[0]),
-      open: numberOrNull(item?.[1]),
-      high: numberOrNull(item?.[2]),
-      low: numberOrNull(item?.[3]),
-      close: numberOrNull(item?.[4]),
-      volume: numberOrNull(item?.[5])
-    }))
-    .filter((candle) => candle.time && candle.open != null && candle.high != null && candle.low != null && candle.close != null)
-    .sort((a, b) => a.time - b.time);
-}
-
-function buildCandlesFromTrades(trades, bucketSeconds) {
-  const tradeRows = Array.isArray(trades?.data) ? trades.data : [];
-  const buckets = new Map();
-  const normalizedTrades = tradeRows
-    .map((trade) => {
-      const attrs = trade?.attributes || {};
-      return {
-        timestamp: Math.floor(Date.parse(attrs.block_timestamp || "") / 1000),
-        price: tradePriceUsd(attrs),
-        volume: numberOrNull(attrs.volume_in_usd) || 0
-      };
-    })
-    .filter((trade) => Number.isFinite(trade.timestamp) && trade.price != null)
-    .sort((a, b) => a.timestamp - b.timestamp);
-
-  for (const trade of normalizedTrades) {
-    const bucketTime = Math.floor(trade.timestamp / bucketSeconds) * bucketSeconds;
-    const existing = buckets.get(bucketTime);
-
-    if (!existing) {
-      buckets.set(bucketTime, {
-        time: bucketTime,
-        open: trade.price,
-        high: trade.price,
-        low: trade.price,
-        close: trade.price,
-        volume: trade.volume
-      });
-      continue;
-    }
-
-    existing.high = Math.max(existing.high, trade.price);
-    existing.low = Math.min(existing.low, trade.price);
-    existing.close = trade.price;
-    existing.volume += trade.volume;
-  }
-
-  return Array.from(buckets.values())
-    .sort((a, b) => a.time - b.time)
-    .slice(-220);
 }
 
 function tradePriceUsd(attrs = {}) {
@@ -946,26 +804,7 @@ function tradePriceUsd(attrs = {}) {
     ?? numberOrNull(attrs.price_from_in_usd);
 }
 
-async function getChartTimeframe() {
-  const { rugscopeChartTimeframe } = await chrome.storage.local.get("rugscopeChartTimeframe");
-  return normalizeChartTimeframe(rugscopeChartTimeframe);
-}
-
-async function setChartTimeframe(timeframe) {
-  const normalized = normalizeChartTimeframe(timeframe);
-  await chrome.storage.local.set({ rugscopeChartTimeframe: normalized });
-  return {
-    ok: true,
-    timeframe: normalized,
-    label: CHART_TIMEFRAMES[normalized].label
-  };
-}
-
-function normalizeChartTimeframe(timeframe) {
-  return CHART_TIMEFRAMES[String(timeframe || "").toLowerCase()] ? String(timeframe).toLowerCase() : DEFAULT_CHART_TIMEFRAME;
-}
-
-function parseWalletTradeMatches({ trades, candles, result, trackedWallets }) {
+function parseWalletTradeMatches({ trades, result, trackedWallets }) {
   const tradeRows = Array.isArray(trades?.data) ? trades.data : [];
   const chainType = result.chainType === "solana" ? "solana" : "evm";
   const watched = buildWatchedWallets(result, trackedWallets).filter((wallet) => wallet.chainType === chainType);
@@ -994,7 +833,6 @@ function parseWalletTradeMatches({ trades, candles, result, trackedWallets }) {
     const tokenAmount = kind === "sell" ? attrs.from_token_amount : attrs.to_token_amount;
     const priceUsd = tradePriceUsd(attrs);
     const volumeUsd = numberOrNull(attrs.volume_in_usd);
-    const candle = findTradeCandle(candles, timestamp);
     const txHash = attrs.tx_hash || "";
 
     matches.push({
@@ -1006,7 +844,6 @@ function parseWalletTradeMatches({ trades, candles, result, trackedWallets }) {
       isDev: Boolean(wallet.isDev),
       kind,
       timestamp,
-      candleTime: candle?.time || timestamp,
       priceUsd,
       volumeUsd,
       amount: cleanAmount(tokenAmount),
@@ -1056,22 +893,6 @@ function buildWatchedWallets(result, trackedWallets) {
   }
 
   return watched;
-}
-
-function findTradeCandle(candles, timestamp) {
-  if (!candles.length) {
-    return null;
-  }
-
-  let selected = candles[0];
-  for (const candle of candles) {
-    if (candle.time <= timestamp) {
-      selected = candle;
-    } else {
-      break;
-    }
-  }
-  return selected;
 }
 
 async function pollTrackedWallets(options = {}) {
@@ -1425,7 +1246,7 @@ async function alertNewWalletMatches(matches, page = {}) {
   const { rugscopeSeenWalletTxs = {} } = await chrome.storage.local.get("rugscopeSeenWalletTxs");
   const now = Date.now();
   const freshMatches = matches.filter((match) => {
-    if (!match.txHash || rugscopeSeenWalletTxs[match.id]) {
+    if (!match?.id || rugscopeSeenWalletTxs[match.id]) {
       return false;
     }
 
@@ -1439,17 +1260,18 @@ async function alertNewWalletMatches(matches, page = {}) {
     await storeWalletAlerts(freshMatches, page);
   }
 
+  for (const match of freshMatches) {
+    rugscopeSeenWalletTxs[match.id] = { updatedAt: now };
+  }
+
   for (const match of freshMatches.slice(0, 5)) {
-    rugscopeSeenWalletTxs[match.id] = now;
     const action = match.kind === "sell" ? "sold" : "bought";
     const amount = [match.amount, match.tokenSymbol].filter(Boolean).join(" ");
     const usd = match.volumeUsd == null ? "" : ` (${formatCompactUsd(match.volumeUsd)})`;
-    chrome.notifications.create(`rugscope:${match.id}`, {
-      type: "basic",
-      iconUrl: "assets/icon128.png",
+    createWalletNotification(`rugscope:${match.id}`, {
       title: `${match.walletLabel} ${action} ${page?.title || "a tracked token"}`,
       message: `${amount || "Trade"}${usd} on ${page?.host || "the current pool"}.`
-    }).catch(() => {});
+    });
   }
 
   trimRecord(rugscopeSeenWalletTxs, 500);
@@ -1461,7 +1283,13 @@ async function storeWalletAlerts(matches, page = {}) {
   const existing = Array.isArray(rugscopeWalletAlerts) ? rugscopeWalletAlerts : [];
   const existingIds = new Set(existing.map((alert) => alert.id));
   const nextAlerts = matches
-    .filter((match) => !existingIds.has(match.id))
+    .filter((match) => {
+      if (!match?.id || existingIds.has(match.id)) {
+        return false;
+      }
+      existingIds.add(match.id);
+      return true;
+    })
     .map((match) => ({
       id: match.id,
       walletId: match.walletId,
@@ -1497,13 +1325,24 @@ function notifyStoredWalletAlerts(alerts) {
     const action = alert.kind === "sell" ? "sold" : "bought";
     const amount = [alert.amount, alert.tokenSymbol].filter(Boolean).join(" ");
     const usd = alert.volumeUsd == null ? "" : ` (${formatCompactUsd(alert.volumeUsd)})`;
-    chrome.notifications.create(`rugscope:${alert.id}`, {
-      type: "basic",
-      iconUrl: "assets/icon128.png",
+    createWalletNotification(`rugscope:${alert.id}`, {
       title: `${alert.walletLabel} ${action} ${alert.tokenTitle || alert.tokenSymbol || "a token"}`,
       message: `${amount || "Trade"}${usd} from wallet-wide tracking.`
-    }).catch(() => {});
+    });
   }
+}
+
+function createWalletNotification(id, options) {
+  if (!chrome.notifications?.create) {
+    return;
+  }
+
+  chrome.notifications.create(id, {
+    type: "basic",
+    iconUrl: chrome.runtime.getURL("assets/icon128.png"),
+    title: options.title || "Rugscope wallet alert",
+    message: options.message || "A tracked wallet matched recent activity."
+  }).catch(() => {});
 }
 
 async function getWalletAlerts() {

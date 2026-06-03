@@ -25,16 +25,16 @@
       <section class="docs-hero">
         <p class="eyebrow">Docs</p>
         <h1>How Rugscope works</h1>
-        <p class="lede">Rugscope watches the page you are already viewing, finds the token address, shows a risk summary, and draws a TradingView-style chart with wallet trade markers. It is built to give context before you trade, not to tell you what to buy or sell.</p>
+        <p class="lede">Rugscope watches the page you are already viewing, finds the token address, shows a risk summary, and badges tracked wallet activity directly on the page. It is built to give context before you trade, not to tell you what to buy or sell.</p>
       </section>
 
       <section class="docs-layout" aria-label="Rugscope documentation">
         <article class="doc-panel">
           <h2>What happens when you open a token page</h2>
           <ol class="doc-list numbered">
-            <li>Rugscope scans the page URL, title, links, and visible text for token addresses.</li>
+            <li>Rugscope scans the page URL, title, metadata, links, app data, page attributes, and visible text for token addresses.</li>
             <li>When it finds a likely token, it checks public market and risk data.</li>
-            <li>A movable risk panel appears on the page with the score, warnings, facts, chart, and tracked wallet trades.</li>
+            <li>A movable risk panel appears on the page with the score, warnings, facts, and tracked wallet trades.</li>
             <li>The panel starts expanded so you can read the result immediately. You can drag it, resize it, or collapse it when you want more screen space.</li>
           </ol>
         </article>
@@ -60,7 +60,7 @@
             </div>
             <div>
               <h3>Wallet activity</h3>
-              <p>Tracked wallet buys and sells are matched against recent pool trades and marked on the chart.</p>
+              <p>Tracked wallet buys and sells are matched against recent pool trades and surfaced in the panel and page markers.</p>
             </div>
             <div>
               <h3>Trade details</h3>
@@ -74,14 +74,19 @@
           <ol class="doc-list numbered">
             <li>Open a token page and wait for the Rugscope panel to appear.</li>
             <li>Paste a wallet address into Wallet Tracker and add a label such as Dev, Whale, or Insider.</li>
-            <li>Rugscope checks recent pool trades for that wallet and places a circular Rugscope marker on the candle where the wallet bought or sold.</li>
+            <li>Rugscope checks recent pool trades for that wallet and adds a Rugscope badge beside matching wallet text when that wallet appears on the page.</li>
             <li>When Rugscope sees a new matching trade while the extension is running, it shows a Chrome notification.</li>
           </ol>
         </article>
 
         <article class="doc-panel">
-          <h2>Chart markers</h2>
-          <p>The chart uses TradingView Lightweight Charts for an interactive candle view. Green markers are buys and red markers are sells. A marker with a dev label means the wallet was either detected as a creator/dev wallet from available public data or manually tracked with a dev-style label. The details list below the chart shows the amount, USD volume, time, and transaction link.</p>
+          <h2>Page markers</h2>
+          <p>Page markers are compact Rugscope badges beside matching wallet text on the site you are viewing. Green means a buy match, red means a sell match, purple means a tracked wallet, and pink means the token creator/dev wallet. The tracked trades list in the panel shows the amount, USD volume, time, and transaction link when available.</p>
+        </article>
+
+        <article class="doc-panel">
+          <h2>Wallet alert history</h2>
+          <p>When a tracked wallet triggers an alert, Rugscope saves it locally. Open Wallet Alerts from the extension popup to review the wallet label, buy or sell side, amount, USD volume, token, time, and transaction link. You can refresh the list or clear it when you no longer need the history.</p>
         </article>
 
         <article class="doc-panel">

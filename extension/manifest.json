@@ -26,7 +26,6 @@
         "<all_urls>"
       ],
       "js": [
-        "vendor/lightweight-charts.standalone.production.js",
         "src/content.js"
       ],
       "run_at": "document_idle"
@@ -52,8 +51,7 @@
     {
       "resources": [
         "assets/icon48.png",
-        "assets/logo.png",
-        "vendor/lightweight-charts.standalone.production.js"
+        "assets/logo.png"
       ],
       "matches": [
         "<all_urls>"
